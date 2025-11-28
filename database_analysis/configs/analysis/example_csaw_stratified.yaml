@@ -1,0 +1,66 @@
+# Analysis wrapper config for CSAW-CC with multiple stratified views.
+# Points to the CSAW database config and adds analysis-specific overrides.
+
+database_config: "../../../mammography_dataset_creator/configs/databases/csaw_cc.yaml"
+data_root: "."          # workspace root (has database_descriptions/)
+output_dir: "database_descriptions/csaw-cc/results"
+database_name: csaw_cc
+
+# Analysis overrides: merged into the database config for analysis only
+column_mappings:
+  pathology:
+    dataset: primary
+    column: x_case
+    description: "Pathology (case label)"
+  finding_type:
+    dataset: primary
+    column: x_type
+    description: "Finding Type"
+  laterality:
+    dataset: primary
+    column: imagelaterality
+    description: "Laterality"
+  view_position:
+    dataset: primary
+    column: viewposition
+    description: "View Position"
+  breast_density:
+    dataset: primary
+    column: libra_percentdensity
+    description: "Percent Density"
+  recall:
+    dataset: primary
+    column: rad_recall
+    description: "Radiologist Recall"
+
+stratified_analyses:
+  pathology_by_laterality:
+    enabled: true
+    target_column: pathology
+    stratify_column: laterality
+    description: "Pathology by laterality"
+  pathology_by_view:
+    enabled: true
+    target_column: pathology
+    stratify_column: view_position
+    description: "Pathology by view position"
+  finding_by_laterality:
+    enabled: true
+    target_column: finding_type
+    stratify_column: laterality
+    description: "Finding type by laterality"
+  density_by_view:
+    enabled: true
+    target_column: breast_density
+    stratify_column: view_position
+    description: "Breast density by view position"
+  recall_by_view:
+    enabled: true
+    target_column: recall
+    stratify_column: view_position
+    description: "Recall by view position"
+  pathology_by_recall:
+    enabled: true
+    target_column: pathology
+    stratify_column: recall
+    description: "Pathology by recall status"

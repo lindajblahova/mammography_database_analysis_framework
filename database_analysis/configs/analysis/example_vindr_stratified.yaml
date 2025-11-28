@@ -1,0 +1,69 @@
+# Analysis wrapper config for VinDR-Mammo with split-aware stratified views.
+
+database_config: "../../../mammography_dataset_creator/configs/databases/vindr.yaml"
+data_root: "."          # workspace root (has database_descriptions/)
+output_dir: "database_descriptions/vindr/results"
+database_name: vindr
+
+# Analysis overrides
+column_mappings:
+  pathology:
+    dataset: primary
+    column: breast_birads
+    description: "Breast BI-RADS (used as pathology proxy)"
+  finding_type:
+    dataset: primary
+    column: finding_categories
+    description: "Finding Categories"
+  split:
+    dataset: primary
+    column: split
+    description: "Train/Test Split"
+  breast_density:
+    dataset: primary
+    column: breast_density
+    description: "Breast Density"
+  laterality:
+    dataset: primary
+    column: laterality
+    description: "Laterality"
+  view_position:
+    dataset: primary
+    column: view_position
+    description: "View Position"
+  birads:
+    dataset: primary
+    column: finding_birads
+    description: "Finding BI-RADS"
+
+stratified_analyses:
+  pathology_by_split:
+    enabled: true
+    target_column: pathology
+    stratify_column: split
+    description: "Pathology (breast BI-RADS) by split"
+  finding_by_split:
+    enabled: true
+    target_column: finding_type
+    stratify_column: split
+    description: "Finding categories by split"
+  density_by_split:
+    enabled: true
+    target_column: breast_density
+    stratify_column: split
+    description: "Breast density by split"
+  birads_by_split:
+    enabled: true
+    target_column: birads
+    stratify_column: split
+    description: "Finding BI-RADS by split"
+  finding_by_pathology:
+    enabled: true
+    target_column: finding_type
+    stratify_column: pathology
+    description: "Finding categories by pathology (breast BI-RADS)"
+  birads_by_pathology:
+    enabled: true
+    target_column: birads
+    stratify_column: pathology
+    description: "Finding BI-RADS by pathology (breast BI-RADS)"

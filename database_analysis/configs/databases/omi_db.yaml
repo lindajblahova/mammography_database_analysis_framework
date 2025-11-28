@@ -1,0 +1,58 @@
+name: omi_db
+display_name: "OMI-DB"
+description: "Optimam Mammography Image Database with detailed pathology and BI-RADS information"
+class_name: "OMIDBDatabase"
+module_path: "databases.plugins.omi_db"
+enabled: true
+
+# File configuration
+base_directory: "database_descriptions/omi-db"
+files:
+  - path: "omidb_filter1_max674.csv"
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: true
+
+# Features supported by this database
+supports_birads: true
+supports_roi: true  # OMI-DB has ROI coordinates!
+supports_train_test_split: true  # OMI-DB needs patient-based train/test splits
+
+# Default settings
+default_priority: 2
+default_quality_threshold: 0.7
+
+# Field mappings from CSV columns to standardized names (using actual OMI-DB column names)
+field_mappings:
+  # Required fields (actual OMI-DB column names)
+  "CLIENT_ID": "PATIENT_ID"
+  "IMAGE_ID_PARSED": "IMAGE_ID"  # Parse from IMAGE_PATH in custom processing
+  "SEVERITY": "PATHOLOGY"
+  "ABNORMALITY_TYPE": "FINDING_TYPE"
+  
+  # ROI coordinates (OMI-DB has these!)
+  "BOUNDING_BOX_X1": "ROI_X1"
+  "BOUNDING_BOX_Y1": "ROI_Y1"
+  "BOUNDING_BOX_X2": "ROI_X2"
+  "BOUNDING_BOX_Y2": "ROI_Y2"
+  
+  # Image path mapping (use processed field)
+  "image_path_source": "IMAGE_PATH"
+
+# Value mappings for standardization (using actual OMI-DB values)
+value_mappings:
+  pathology:
+    'Benign': 'BENIGN'
+    'Malignant': 'MALIGNANT'
+  
+  finding_type:
+    'CALC': 'CALCIFICATION'
+    'MASS': 'MASS'
+
+# Custom processing configuration
+custom_logic:
+  construct_finding_type: true     # Derive finding_type from other fields
+  pathology_hierarchy: true       # Apply pathology hierarchy rules
+  birads_to_pathology: true       # Convert BI-RADS to pathology when needed
+  quality_filtering: true         # Filter based on image quality
+  handle_missing_laterality: true # Handle cases where laterality is missing

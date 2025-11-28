@@ -1,0 +1,79 @@
+name: csaw_cc
+display_name: "CSAW-CC"
+description: "Cancer screening dataset with screening workflow data, age groups, and mask annotations"
+class_name: "CSAWCCDatabase"
+module_path: "databases.plugins.csaw_cc"
+enabled: true
+
+# File configuration - CSAW-CC uses multiple CSV files
+base_directory: "database_descriptions/csaw-cc"
+files:
+  - path: "CSAW-CC_breast_cancer_screening_data.csv"
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: true
+  - path: "CSAW-CC_mass-calc_disctinction_for_annotations_v2.csv"
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: false
+  - path: "CSAW-CC_mask_annotations.csv"
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: false
+
+# Features supported by this database
+supports_birads: false
+supports_roi: true
+supports_train_test_split: true  # CSAW-CC needs patient-based train/test splits
+
+# Default settings
+default_priority: 3
+default_quality_threshold: 0.6
+
+# Field mappings from CSV columns to standardized names
+field_mappings:
+  # Required fields (from main screening data)
+  "anon_patientid": "PATIENT_ID"
+  "IMAGE_ID_PARSED": "IMAGE_ID"  # Parse from anon_filename in custom processing
+  "x_case": "PATHOLOGY"
+  "primary_finding": "FINDING_TYPE"
+  
+  # Optional fields
+  "imagelaterality": "LATERALITY"
+  "viewposition": "VIEW_POSITION"
+  # Map age information to standardized age_group field (requested change)
+  "x_age": "AGE_GROUP"
+  
+  # ROI coordinates (from annotations)
+  "left": "ROI_X1"
+  "upper": "ROI_Y1"
+  "right": "ROI_X2"
+  "bottom": "ROI_Y2"
+  
+  # Additional fields
+  "libra_percentdensity": "BREAST_DENSITY"
+  "mask_filename": "MASK_PATH"
+  
+  # Image path mapping (note: this creates a synthetic mapping)
+  "image_path_source": "IMAGE_PATH"
+
+# Value mappings for standardization
+value_mappings:
+  pathology:
+    '0': 'BENIGN'    # Normal/No cancer (91,484 records)
+    '1': 'MALIGNANT' # Cancer (7,304 records)
+  
+  finding_type:
+    'CALC': 'CALCIFICATION'
+    'calc': 'CALCIFICATION'
+    'MASS': 'MASS'
+    'mass': 'MASS'
+    'MASS?': 'MASS'  # Uncertain mass still mapped to mass
+
+# Custom processing configuration
+custom_logic:
+  multi_file_merge: true          # Merge multiple CSV files by filename
+  filename_based_matching: true   # Use filename for joining data
+  preprocess_filenames: true      # Clean filenames before matching
+  construct_mask_path: true       # Build mask paths from mask_filename
+  duplicate_image_path: true      # Copy anon_filename to image_path

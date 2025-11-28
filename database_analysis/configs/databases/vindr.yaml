@@ -1,0 +1,127 @@
+name: vindr
+display_name: "VinDR-Mammo"
+description: "Large-scale mammography dataset from Vietnam with detailed annotations and multiple findings per image"
+class_name: "VinDrDatabase"
+module_path: "databases.plugins.vindr"
+enabled: true
+
+# File configuration - VinDr uses multiple CSV files
+files:
+  - path: "database_descriptions/vindr/finding_annotations.csv"
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: true
+  - path: "database_descriptions/vindr/breast-level_annotations.csv"
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: false
+  - path: "database_descriptions/vindr/metadata.csv" 
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: false
+
+# Features supported by this database
+supports_birads: true
+supports_roi: true
+supports_train_test_split: true
+
+# Default settings
+default_priority: 2
+default_quality_threshold: 0.6
+
+# Field mappings from CSV columns to standardized names
+field_mappings:
+  # Required fields (from finding_annotations.csv)
+  "study_id": "PATIENT_ID"
+  "image_id": "IMAGE_ID"
+  "breast_birads": "PATHOLOGY"  # Use breast_birads for pathology classification
+  "finding_categories": "FINDING_TYPE"
+  
+  # Optional fields
+  "laterality": "LATERALITY"
+  "view_position": "VIEW_POSITION"
+  "finding_birads": "BIRADS_ASSESSMENT"  # Prioritize finding_birads
+  
+  # Image path (constructed in apply_custom_processing)
+  "image_path": "IMAGE_PATH"
+  
+  # ROI coordinates
+  "xmin": "ROI_X1"
+  "ymin": "ROI_Y1" 
+  "xmax": "ROI_X2"
+  "ymax": "ROI_Y2"
+  
+  # Train/test split
+  "split": "TRAIN_TEST_SPLIT"
+  
+  # Additional fields to preserve
+  "height": "height"
+  "width": "width"
+
+# Value mappings for standardization
+value_mappings:
+  pathology:
+    # BI-RADS based pathology mapping: 1-3 = BENIGN, 4-6 = MALIGNANT
+    'BI-RADS 1': 'BENIGN'        # Negative
+    'BI-RADS 2': 'BENIGN'        # Benign finding  
+    'BI-RADS 3': 'BENIGN'        # Probably benign
+    'BI-RADS 4': 'MALIGNANT'     # Suspicious abnormality
+    'BI-RADS 5': 'MALIGNANT'     # Highly suggestive of malignancy
+    'BI-RADS 6': 'MALIGNANT'     # Known biopsy-proven malignancy
+  
+  finding_type:
+    # VinDR finding_categories are list strings
+    "['No Finding']": 'NORMAL'
+    "['Mass']": 'MASS'
+    "['Suspicious Calcification']": 'CALCIFICATION'
+    "['Focal Asymmetry']": 'ASYMMETRY'
+    "['Global Asymmetry']": 'ASYMMETRY'
+    "['Asymmetry']": 'ASYMMETRY'
+    "['Architectural Distortion']": 'ARCHITECTURAL_DISTORTION'
+    "['Skin Thickening']": 'SKIN_THICKENING'
+    "['Suspicious Lymph Node']": 'LYMPH_NODE'
+    # Handle multiple findings - use primary finding
+    "['Suspicious Calcification', 'Mass']": 'CALCIFICATION'
+    "['Suspicious Calcification', 'Focal Asymmetry']": 'CALCIFICATION'
+    "['Suspicious Calcification', 'Architectural Distortion']": 'CALCIFICATION'
+    "['Nipple Retraction', 'Mass']": 'MASS'
+    "['Mass', 'Focal Asymmetry']": 'MASS'
+  
+  train_test_split:
+    'training': 'TRAIN'
+    'test': 'TEST'
+  
+  laterality:
+    'L': 'LEFT'
+    'R': 'RIGHT'
+    'LEFT': 'LEFT'
+    'RIGHT': 'RIGHT'
+  
+  view_position:
+    'CC': 'CC'
+    'MLO': 'MLO'
+  
+  birads:
+    # finding_birads uses numeric format
+    '0': '0'
+    '1': '1'
+    '2': '2'
+    '3': '3'
+    '4': '4'
+    '5': '5'
+    '6': '6'
+    # breast_birads uses "BI-RADS X" format  
+    'BI-RADS 0': '0'
+    'BI-RADS 1': '1'
+    'BI-RADS 2': '2'
+    'BI-RADS 3': '3'
+    'BI-RADS 4': '4'
+    'BI-RADS 5': '5'
+    'BI-RADS 6': '6'
+
+# Custom processing configuration
+custom_logic:
+  multi_file_merge: true       # Merge multiple CSV files
+  birads_fallback: true        # Extract BI-RADS from breast_birads when finding_birads is missing
+  construct_image_path: true   # Build image path from image_id
+  handle_list_categories: true # Parse finding_categories as lists

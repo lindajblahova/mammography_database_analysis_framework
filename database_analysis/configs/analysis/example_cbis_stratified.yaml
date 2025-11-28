@@ -1,0 +1,67 @@
+# Analysis wrapper config for CBIS-DDSM with stratified BI-RADS by split.
+# Consumed by mammography_analyzer_new.py; points to the database adapter config
+# and adds analysis-specific overrides.
+
+database_config: "../../../mammography_dataset_creator/configs/databases/cbis_ddsm.yaml"
+data_root: "."          # workspace root (has database_descriptions/)
+output_dir: "database_descriptions/cbis-ddsm/results"  # optional override
+database_name: cbis_ddsm
+
+# Analysis overrides: merged into the database config for analysis only
+column_mappings:
+  birads:
+    dataset: primary
+    column: assessment
+    description: "BI-RADS Assessment"
+  split:
+    dataset: primary
+    column: file name
+    description: "Train/Test Split"
+  pathology:
+    dataset: primary
+    column: pathology
+    description: "Pathology"
+  finding_type:
+    dataset: primary
+    column: abnormality type
+    description: "Finding Type"
+  breast_density:
+    dataset: primary
+    column: breast density
+    description: "Breast Density"
+  laterality:
+    dataset: primary
+    column: left or right breast
+    description: "Laterality"
+
+stratified_analyses:
+  birads_by_split:
+    enabled: true
+    target_column: birads
+    stratify_column: split
+    description: "BI-RADS by train/test split"
+  pathology_by_split:
+    enabled: true
+    target_column: pathology
+    stratify_column: split
+    description: "Pathology by split"
+  finding_by_split:
+    enabled: true
+    target_column: finding_type
+    stratify_column: split
+    description: "Finding type by split"
+  birads_by_pathology:
+    enabled: true
+    target_column: birads
+    stratify_column: pathology
+    description: "BI-RADS by pathology"
+  density_by_split:
+    enabled: true
+    target_column: breast_density
+    stratify_column: split
+    description: "Breast density by split"
+  laterality_by_split:
+    enabled: true
+    target_column: laterality
+    stratify_column: split
+    description: "Laterality by split"

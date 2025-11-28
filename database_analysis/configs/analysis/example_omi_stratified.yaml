@@ -1,0 +1,29 @@
+# Analysis wrapper config for OMI-DB with simple stratified views.
+
+database_config: "../../../mammography_dataset_creator/configs/databases/omi_db.yaml"
+data_root: "."          # workspace root (has database_descriptions/)
+output_dir: "database_descriptions/omi-db/results"
+database_name: omi_db
+
+# Analysis overrides
+column_mappings:
+  pathology:
+    dataset: primary
+    column: SEVERITY
+    description: "Pathology (Severity)"
+  finding_type:
+    dataset: primary
+    column: ABNORMALITY_TYPE
+    description: "Finding Type"
+
+stratified_analyses:
+  pathology_by_finding:
+    enabled: true
+    target_column: pathology
+    stratify_column: finding_type
+    description: "Pathology by finding type"
+  finding_by_pathology:
+    enabled: true
+    target_column: finding_type
+    stratify_column: pathology
+    description: "Finding type by pathology"

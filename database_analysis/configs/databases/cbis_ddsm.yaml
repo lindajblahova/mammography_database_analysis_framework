@@ -1,0 +1,80 @@
+name: cbis_ddsm
+display_name: "CBIS-DDSM"
+description: "Curated Breast Imaging Subset of DDSM - Mass and calcification cases with pathology information"
+class_name: "CBISDDSMDatabase"
+module_path: "databases.plugins.cbis_ddsm"
+enabled: true
+
+# File configuration
+files:
+  - path: "database_descriptions/cbis-ddsm/cbisddsm_max674calcedited.csv"
+    encoding: utf-8
+    fallback_encoding: latin-1
+    required: true
+
+# Features supported by this database
+supports_birads: true
+supports_roi: true
+supports_train_test_split: true
+
+# Default settings
+default_priority: 1
+default_quality_threshold: 0.6
+
+# Field mappings from CSV columns to standardized names
+field_mappings:
+  # Required fields
+  "patient_id": "PATIENT_ID"
+  "abnormality id": "IMAGE_ID" 
+  "pathology": "PATHOLOGY"
+  "abnormality type": "FINDING_TYPE"
+  
+  # Optional fields
+  "left or right breast": "LATERALITY"
+  "image view": "VIEW_POSITION"
+  "assessment": "BIRADS_ASSESSMENT"
+  "breast density": "BREAST_DENSITY"
+  "image file path": "IMAGE_PATH"
+  "ROI mask file path": "MASK_PATH"
+  "file name": "TRAIN_TEST_SPLIT"
+  
+  # Additional fields to preserve
+  "subtlety": "subtlety"
+
+# Value mappings for standardization
+value_mappings:
+  pathology:
+    'BENIGN': 'BENIGN'
+    'MALIGNANT': 'MALIGNANT'
+    'BENIGN_WITHOUT_CALLBACK': 'BENIGN'
+  
+  finding_type:
+    'mass': 'MASS'
+    'calcification': 'CALCIFICATION'
+  
+  laterality:
+    'LEFT': 'LEFT'
+    'RIGHT': 'RIGHT'
+  
+  view_position:
+    'CC': 'CC'
+    'MLO': 'MLO'
+  
+  train_test_split:
+    'CALC_TRAIN': 'TRAIN'
+    'CALC_TEST': 'TEST'
+  
+  birads:
+    '0': '0'
+    '1': '1'
+    '2': '2'
+    '3': '3'
+    '4': '4'
+    '5': '5'
+    '6': '6'
+
+# Custom processing configuration
+custom_logic:
+  create_abnormality_id: true  # Combine patient_id and abnormality_id
+  clean_image_paths: true      # Remove whitespace from paths
+  handle_missing_pathology: true
